@@ -1,0 +1,26 @@
+{
+   "marca":"Jeep",
+   "modelo":"Rene gade",
+   "ano":2020,
+   "cor":{
+      "codigo":3,
+      "color":"Branco"
+   },
+   "revisao":[
+      {
+         "numero":1,
+         "ano":2020,
+         "local":"loja X"
+      },
+      {
+         "numero":2,
+         "ano":2021,
+         "local":"loja X"
+      }
+   ],
+   "venda":null,
+   "preco":95500.50
+}
+
+
+
