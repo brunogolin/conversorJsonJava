@@ -1,26 +1,70 @@
 {
-   "marca":"Jeep",
-   "modelo":"Rene gade",
-   "ano":2020,
-   "cor":{
-      "codigo":3,
-      "color":"Branco"
-   },
-   "revisao":[
+  "product": {
+    "id": 1071559588,
+    "title": "Burton Custom Freestyle 151",
+    "body_html": "<strong>Good snowboard!</strong>",
+    "vendor": "Burton",
+    "product_type": "Snowboard",
+    "created_at": "2023-07-11T17:49:24-04:00",
+    "handle": "burton-custom-freestyle-151",
+    "updated_at": "2023-07-11T17:49:24-04:00",
+    "published_at": null,
+    "template_suffix": null,
+    "status": "draft",
+    "published_scope": "web",
+    "tags": "",
+    "admin_graphql_api_id": "gid://shopify/Product/1071559588",
+    "variants": [
       {
-         "numero":1,
-         "ano":2020,
-         "local":"loja X"
-      },
-      {
-         "numero":2,
-         "ano":2021,
-         "local":"loja X"
+        "id": 1070325033,
+        "product_id": 1071559588,
+        "title": "Default Title",
+        "price": "0.00",
+        "sku": "",
+        "position": 1,
+        "inventory_policy": "deny",
+        "compare_at_price": null,
+        "fulfillment_service": "manual",
+        "inventory_management": null,
+        "option1": "Default Title",
+        "option2": null,
+        "option3": null,
+        "created_at": "2023-07-11T17:49:24-04:00",
+        "updated_at": "2023-07-11T17:49:24-04:00",
+        "taxable": true,
+        "barcode": null,
+        "grams": 0,
+        "image_id": null,
+        "weight": 0,
+        "weight_unit": "lb",
+        "inventory_item_id": 1070325033,
+        "inventory_quantity": 0,
+        "old_inventory_quantity": 0,
+        "presentment_prices": [
+          {
+            "price": {
+              "amount": "0.00",
+              "currency_code": "USD"
+            },
+            "compare_at_price": null
+          }
+        ],
+        "requires_shipping": true,
+        "admin_graphql_api_id": "gid://shopify/ProductVariant/1070325033"
       }
-   ],
-   "venda":null,
-   "preco":95500.50
+    ],
+    "options": [
+      {
+        "id": 1055547198,
+        "product_id": 1071559588,
+        "name": "Title",
+        "position": 1,
+        "values": [
+          "Default Title"
+        ]
+      }
+    ],
+    "images": [],
+    "image": null
+  }
 }
-
-
-

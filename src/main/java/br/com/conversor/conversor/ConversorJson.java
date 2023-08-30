@@ -19,7 +19,7 @@ import java.util.LinkedHashMap;
 
 public class ConversorJson {
 
-    public static void start(String namePackage, String nomeArquivoInicio, String nomeArquivoFinal) throws ParseException, IOException {
+    public static void start(String sistema, String processo, String namePackage, String nomeArquivoInicio, String nomeArquivoFinal) throws ParseException, IOException {
         JSONObject jsonObject;
         JSONParser parser = new JSONParser();
 
@@ -27,7 +27,7 @@ public class ConversorJson {
 
         jsonObject = (JSONObject) parser.parse(json);
 
-        tratamentoRegistro(namePackage, jsonObject, nomeArquivoInicio, "", nomeArquivoFinal);
+        tratamentoRegistro(sistema, processo, namePackage, jsonObject, nomeArquivoInicio, "", nomeArquivoFinal);
 
         System.out.println("FIM - " + nomeArquivoInicio + nomeArquivoFinal);
     }
@@ -50,7 +50,7 @@ public class ConversorJson {
         return json;
     }
 
-    private static void tratamentoRegistro(String namePackage, JSONObject jsonObject, String nomeArquivoInicio, String nomeArquivoMeio, String nomeArquivoFinal) throws IOException {
+    private static void tratamentoRegistro(String sistema, String processo, String namePackage, JSONObject jsonObject, String nomeArquivoInicio, String nomeArquivoMeio, String nomeArquivoFinal) throws IOException {
         String nomeArquivo = nomeArquivoInicio + nomeArquivoMeio + nomeArquivoFinal;
         OutputStream os = new FileOutputStream("result\\" + nomeArquivo + ".java");
         Writer wr = new OutputStreamWriter(os);
@@ -66,9 +66,12 @@ public class ConversorJson {
         br.newLine();
 
         for (Object key: jsonObject.keySet()) {
+            if (key.equals("values"))
+                System.out.println("Breakpoint");
+
             Object value = jsonObject.get(key);
 
-            String type = "";
+            String type = null;
 
             if (value != null) {
                 try {
@@ -77,8 +80,8 @@ public class ConversorJson {
                     String nomeArquivoFilho = nomeArquivoInicio + nomeArquivoMeio + nomeArquivoFinal;
                     br.write("    private " + nomeArquivoFilho + " " + key + ";");
                     br.newLine();
-                    variables.put(nomeArquivoFilho, key.toString());
-                    tratamentoRegistro(namePackage, jsonItem, nomeArquivoInicio, nomeArquivoMeio, nomeArquivoFinal);
+                    variables.put(key.toString(), nomeArquivoFilho);
+                    tratamentoRegistro(sistema, processo, namePackage, jsonItem, nomeArquivoInicio, nomeArquivoMeio, nomeArquivoFinal);
                     continue;
                 } catch (Exception e) {
                 }
@@ -86,33 +89,41 @@ public class ConversorJson {
                 try {
                     int quantidadeArray = ((JSONArray) value).size();
                     if (quantidadeArray > 0) {
-                        JSONArray josnArray = (JSONArray) value;
-                        nomeArquivoMeio = StringUtils.capitalize(key.toString());
-                        String nomeArquivoFilho = "List<" + nomeArquivoInicio + nomeArquivoMeio + nomeArquivoFinal + ">";
-                        br.write("    private " + nomeArquivoFilho + " " + key + ";");
-                        br.newLine();
-                        variables.put(nomeArquivoFilho, key.toString());
-                        tratamentoRegistro(namePackage, (JSONObject) josnArray.get(0), nomeArquivoInicio, nomeArquivoMeio, nomeArquivoFinal);
+                        JSONArray jsonArray = (JSONArray) value;
+                        if (jsonArray.get(0).getClass() == String.class) {
+                            type = "List<String>";
+                            br.write("    private " + type + " " + key + ";");
+                            br.newLine();
+                            variables.put(key.toString(), type);
+                        } else {
+                            nomeArquivoMeio = StringUtils.capitalize(key.toString());
+                            String nomeArquivoFilho = "List<" + nomeArquivoInicio + nomeArquivoMeio + nomeArquivoFinal + ">";
+                            br.write("    private " + nomeArquivoFilho + " " + key + ";");
+                            br.newLine();
+                            variables.put(key.toString(), nomeArquivoFilho);
+                            tratamentoRegistro(sistema, processo, namePackage, (JSONObject) jsonArray.get(0), nomeArquivoInicio, nomeArquivoMeio, nomeArquivoFinal);
+                        }
                         continue;
                     }
                 } catch (Exception e) {
                 }
 
 
-                try {
-                    Double.parseDouble(value.toString());
-                    if (value.toString().contains("\"")) {
-                        type = "String";
-                    } else {
-                        type = "double";
-                    }
-                } catch (NumberFormatException ex) {
+                if (value.getClass() == String.class)
                     type = "String";
-                }
+                if (value.getClass() == Double.class || value.getClass() == Long.class)
+                    type = "double";
+                if (value.getClass() == Boolean.class)
+                    type = "boolean";
 
-                br.write("    private " + type + " " + key + ";");
+                if (type != null) {
+                    br.write("    private " + type + " " + key + ";");
+                    variables.put(key.toString(), type);
+                } else {
+                    br.write("    // " + key);
+                }
                 br.newLine();
-                variables.put(type, key.toString());
+
             } else {
                 br.write("    // " + key);
                 br.newLine();
@@ -121,9 +132,13 @@ public class ConversorJson {
 
         br.newLine();
 
-        for (String key : variables.keySet()) {
+        OutputStream osInsert = new FileOutputStream("result\\insert_" + nomeArquivo + ".java");
+        Writer wrInsert = new OutputStreamWriter(osInsert);
+        BufferedWriter brInsert = new BufferedWriter(wrInsert);
 
-            String value = variables.get(key);
+        for (String value : variables.keySet()) {
+
+            String key = variables.get(value);
 
             br.write("    public " + key + " get" + StringUtils.capitalize(value) + "() {");
             br.newLine();
@@ -140,11 +155,20 @@ public class ConversorJson {
             br.write("    }");
             br.newLine();
             br.newLine();
+
+            String field = value;
+            String insert = "INSERT INTO db_vdc.ipaas_system_field (system_id, process_id, field_id, name) VALUES ";
+            insert = insert + "('" + sistema.toUpperCase() + "', '" + processo.toUpperCase() + "', '";
+            insert = insert + field.toUpperCase() + "', '" + field.toLowerCase() + "');";
+            brInsert.write(insert);
+            brInsert.newLine();
+
         }
 
         br.write("}");
 
         br.close();
+        brInsert.close();
     }
 
 }
